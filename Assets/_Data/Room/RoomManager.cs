@@ -254,4 +254,9 @@ public class RoomManager : NetworkBehaviour
             Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { senderClientId } }
         });
     }
+
+    public List<Room> GetRooms()
+    {
+        return rooms;
+    }
 }
