@@ -4,8 +4,11 @@ using System.Collections.Generic;
 
 public class RoomManager : NetworkBehaviour
 {
+
+    [SerializeField] protected ulong clientId;
+    [SerializeField] protected Room currentRoom;
     [SerializeField] protected List<Room> rooms = new();
-    private static Dictionary<ulong, Room> playerRoomMap = new Dictionary<ulong, Room>();
+    protected Dictionary<ulong, Room> playerRoomMap = new();
 
     public string roomNameInput = "Room_1234";
     public int maxPlayersInput = 2;
@@ -44,6 +47,8 @@ public class RoomManager : NetworkBehaviour
         {
             RequestRoomDataServerRpc();
         }
+
+        this.clientId = NetworkManager.LocalClientId;
     }
 
     public void CreateRoom()
@@ -90,10 +95,11 @@ public class RoomManager : NetworkBehaviour
             return;
         }
 
-        Room newRoom = new Room(roomName, maxPlayers);
+        Room newRoom = new(roomName, maxPlayers);
         newRoom.Players.Add(clientId);
         rooms.Add(newRoom);
         playerRoomMap[clientId] = newRoom;
+        if(clientId == NetworkManager.Singleton.LocalClientId) this.currentRoom = newRoom;
 
         if (autoUpdateRooms) UpdateClientsRoomList();
 
@@ -161,6 +167,7 @@ public class RoomManager : NetworkBehaviour
         room.Players.Add(clientId);
         playerRoomMap[clientId] = room;
         if (autoUpdateRooms) UpdateClientsRoomList();
+        if (room.RoomID == this.currentRoom.RoomID) this.currentRoom = room;
 
         Debug.Log($"[{clientId}] Joined room: {roomName} (Players: {room.Players.Count}/{room.MaxPlayers})");
     }
@@ -240,7 +247,14 @@ public class RoomManager : NetworkBehaviour
     {
         RoomListWrapper wrapper = JsonUtility.FromJson<RoomListWrapper>(json);
         rooms = wrapper.Rooms;
+        this.ClientUpdateCurrentRoom();
         Debug.Log("Updated room list from server.");
+    }
+
+    protected virtual void ClientUpdateCurrentRoom()
+    {
+        Room room = this.GetRoomClientBelongTo(this.clientId);
+        this.currentRoom = room;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -258,5 +272,14 @@ public class RoomManager : NetworkBehaviour
     public List<Room> GetRooms()
     {
         return rooms;
+    }
+
+    protected virtual Room GetRoomClientBelongTo(ulong clientId)
+    {
+        foreach (Room room in rooms)
+        {
+            if (room.Players.Contains(clientId)) return room;
+        }
+        return null;
     }
 }
