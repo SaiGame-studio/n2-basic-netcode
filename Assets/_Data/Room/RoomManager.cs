@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
+using System;
 
 public class RoomManager : NetworkBehaviour
 {
@@ -14,6 +15,9 @@ public class RoomManager : NetworkBehaviour
     public int maxPlayersInput = 2;
 
     [SerializeField] protected bool autoUpdateRooms = true;
+
+    public static event Action<ulong, string> OnClientJoinedRoom;
+    public static event Action<ulong, string> OnClientLeftRoom;
 
     [System.Serializable]
     public class Room
@@ -99,10 +103,10 @@ public class RoomManager : NetworkBehaviour
         newRoom.Players.Add(clientId);
         rooms.Add(newRoom);
         playerRoomMap[clientId] = newRoom;
-        if(clientId == NetworkManager.Singleton.LocalClientId) this.currentRoom = newRoom;
-
+        if(clientId == this.clientId) this.currentRoom = newRoom;
         if (autoUpdateRooms) UpdateClientsRoomList();
 
+        OnClientJoinedRoom?.Invoke(clientId, roomName);
         Debug.Log($"[{clientId}] Created room: {roomName} (Max Players: {maxPlayers})");
     }
 
@@ -169,6 +173,7 @@ public class RoomManager : NetworkBehaviour
         if (autoUpdateRooms) UpdateClientsRoomList();
         if (room.RoomID == this.currentRoom.RoomID) this.currentRoom = room;
 
+        OnClientJoinedRoom?.Invoke(clientId, roomName);
         Debug.Log($"[{clientId}] Joined room: {roomName} (Players: {room.Players.Count}/{room.MaxPlayers})");
     }
 
@@ -222,6 +227,8 @@ public class RoomManager : NetworkBehaviour
         }
 
         if (autoUpdateRooms) UpdateClientsRoomList();
+
+        OnClientLeftRoom?.Invoke(clientId, room.RoomID);
     }
 
     public void ShowRoomList()
