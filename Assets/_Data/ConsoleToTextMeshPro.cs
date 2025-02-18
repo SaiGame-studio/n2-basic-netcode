@@ -3,7 +3,8 @@ using TMPro;
 
 public class ConsoleToTextMeshPro : MonoBehaviour
 {
-    public TextMeshProUGUI logText; 
+    public TextMeshProUGUI logText;
+    public int maxText = 1000;
     private string logMessages = "";
 
     void OnEnable()
@@ -20,9 +21,9 @@ public class ConsoleToTextMeshPro : MonoBehaviour
     {
         logMessages += logString + "\n";
 
-        if (logMessages.Length > 5000)
+        if (logMessages.Length > this.maxText)
         {
-            logMessages = logMessages.Substring(logMessages.Length - 5000);
+            logMessages = logMessages.Substring(logMessages.Length - this.maxText);
         }
 
         if (logText != null)
