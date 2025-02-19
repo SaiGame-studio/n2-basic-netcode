@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2151891834699756406}
   - component: {fileID: 4504056437076653799}
   - component: {fileID: 4150803289012262367}
+  - component: {fileID: -1092407361690179956}
   m_Layer: 0
   m_Name: PlayerServer
   m_TagString: Untagged
@@ -110,6 +111,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
+--- !u!114 &-1092407361690179956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4179029445588859838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14b5e4bcca2a13149834cdb8071ee7d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  ContinuallyCheckVisibility: 1
+  VisibilityDistance: 5
 --- !u!1 &4922722791581955311
 GameObject:
   m_ObjectHideFlags: 0

@@ -38,8 +38,9 @@ public class PlayerSpawner : MonoBehaviour
         GameObject playerInstance = Instantiate(playerPrefab);
         playerInstance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
         spawnedPlayers[clientId] = playerInstance;
-
         Debug.Log($"Spawned player for client {clientId} in room {roomName}");
+
+        SendExistingPlayersToClient(clientId, roomName);
     }
 
     private void HandleClientLeftRoom(ulong clientId, string roomName)
@@ -52,5 +53,35 @@ public class PlayerSpawner : MonoBehaviour
             spawnedPlayers.Remove(clientId);
             Debug.Log($"Destroyed player for client {clientId} after leaving room {roomName}");
         }
+    }
+
+    private void SendExistingPlayersToClient(ulong newClientId, string roomName)
+    {
+        if (!NetworkManager.Singleton.IsServer) return;
+
+        List<ulong> playersInRoom = RoomManager.Instance.GetPlayersInRoom(roomName);
+        foreach (ulong existingClientId in playersInRoom)
+        {
+            if (existingClientId == newClientId) continue; 
+
+            RequestSpawnExistingPlayerClientRpc(existingClientId, newClientId);
+        }
+    }
+
+    [ClientRpc]
+    private void RequestSpawnExistingPlayerClientRpc(ulong existingClientId, ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId != targetClientId) return;
+
+        if (!spawnedPlayers.ContainsKey(existingClientId))
+        {
+            Debug.LogWarning($"Trying to spawn existing player {existingClientId} but it doesn't exist on the client.");
+            return;
+        }
+
+        GameObject playerInstance = Instantiate(playerPrefab);
+        playerInstance.GetComponent<NetworkObject>().Spawn();
+        spawnedPlayers[existingClientId] = playerInstance;
+        Debug.Log($"Spawned existing player {existingClientId} for new client {targetClientId}");
     }
 }

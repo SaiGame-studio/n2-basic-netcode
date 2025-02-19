@@ -5,6 +5,7 @@ using System;
 
 public class RoomManager : NetworkBehaviour
 {
+    public static RoomManager Instance { get; private set; }
 
     [SerializeField] protected ulong clientId;
     [SerializeField] protected Room currentRoom;
@@ -43,6 +44,18 @@ public class RoomManager : NetworkBehaviour
         {
             Rooms = rooms;
         }
+    }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogError("Multiple instances of RoomManager detected! Destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
     }
 
     public override void OnNetworkSpawn()
@@ -103,7 +116,7 @@ public class RoomManager : NetworkBehaviour
         newRoom.Players.Add(clientId);
         rooms.Add(newRoom);
         playerRoomMap[clientId] = newRoom;
-        if(clientId == this.clientId) this.currentRoom = newRoom;
+        if (clientId == this.clientId) this.currentRoom = newRoom;
         if (autoUpdateRooms) UpdateClientsRoomList();
 
         OnClientJoinedRoom?.Invoke(clientId, roomName);
@@ -171,7 +184,7 @@ public class RoomManager : NetworkBehaviour
         room.Players.Add(clientId);
         playerRoomMap[clientId] = room;
         if (autoUpdateRooms) UpdateClientsRoomList();
-        if (room.RoomID == this.currentRoom.RoomID) this.currentRoom = room;
+        if (this.currentRoom != null && room.RoomID == this.currentRoom.RoomID) this.currentRoom = room;
 
         OnClientJoinedRoom?.Invoke(clientId, roomName);
         Debug.Log($"[{clientId}] Joined room: {roomName} (Players: {room.Players.Count}/{room.MaxPlayers})");
@@ -289,4 +302,16 @@ public class RoomManager : NetworkBehaviour
         }
         return null;
     }
+
+    public virtual List<ulong> GetPlayersInRoom(string roomName)
+    {
+        Room room = this.GetRoomByName(roomName);
+        return room.Players;
+    }
+
+    public Room GetRoomByName(string roomName)
+    {
+        return rooms.Find(room => room.RoomID == roomName);
+    }
+
 }
