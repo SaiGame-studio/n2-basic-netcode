@@ -68,7 +68,7 @@ public class RoomUIManager : MonoBehaviour
         roomListText.text = "Room List:\n";
         foreach (var room in roomManager.GetRooms()) // Requires GetRooms() method in RoomManager
         {
-            roomListText.text += $"{room.RoomID} ({room.Players.Count}/{room.MaxPlayers})\n";
+            roomListText.text += $"{room.RoomName} ({room.Players.Count}/{room.MaxPlayers})\n";
         }
     }
 

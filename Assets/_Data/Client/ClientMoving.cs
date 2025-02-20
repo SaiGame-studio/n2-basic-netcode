@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerServerMoving : NetworkBehaviour
+public class ClientMoving : NetworkBehaviour
 {
     public float moveSpeed = 5f;
     private Vector3 moveInput;
@@ -24,7 +24,7 @@ public class PlayerServerMoving : NetworkBehaviour
 
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(rpcParams.Receive.SenderClientId, out var client))
         {
-            if (client.PlayerObject.TryGetComponent(out PlayerServerMoving player))
+            if (client.PlayerObject.TryGetComponent(out ClientMoving player))
             {
                 player.transform.position += moveDirection * moveSpeed * Time.deltaTime;
             }

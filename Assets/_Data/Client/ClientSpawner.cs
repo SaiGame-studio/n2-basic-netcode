@@ -2,10 +2,10 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 
-public class PlayerSpawner : MonoBehaviour
+public class ClientSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject playerPrefab;
-    private Dictionary<ulong, GameObject> spawnedPlayers = new();
+    [SerializeField] private GameObject clientPrefab;
+    private Dictionary<ulong, GameObject> spawnedClients = new();
 
     private void OnEnable()
     {
@@ -23,21 +23,21 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (!NetworkManager.Singleton.IsServer) return;
 
-        if (playerPrefab == null)
+        if (clientPrefab == null)
         {
             Debug.LogError("PlayerPrefab is not assigned in PlayerSpawner!");
             return;
         }
 
-        if (spawnedPlayers.ContainsKey(clientId))
+        if (spawnedClients.ContainsKey(clientId))
         {
             Debug.LogWarning($"Player for client {clientId} already exists.");
             return;
         }
 
-        GameObject playerInstance = Instantiate(playerPrefab);
+        GameObject playerInstance = Instantiate(clientPrefab);
         playerInstance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-        spawnedPlayers[clientId] = playerInstance;
+        spawnedClients[clientId] = playerInstance;
         Debug.Log($"Spawned player for client {clientId} in room {roomName}");
 
         SendExistingPlayersToClient(clientId, roomName);
@@ -47,10 +47,10 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (!NetworkManager.Singleton.IsServer) return;
 
-        if (spawnedPlayers.TryGetValue(clientId, out GameObject player))
+        if (spawnedClients.TryGetValue(clientId, out GameObject player))
         {
             Destroy(player);
-            spawnedPlayers.Remove(clientId);
+            spawnedClients.Remove(clientId);
             Debug.Log($"Destroyed player for client {clientId} after leaving room {roomName}");
         }
     }
@@ -73,15 +73,15 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (NetworkManager.Singleton.LocalClientId != targetClientId) return;
 
-        if (!spawnedPlayers.ContainsKey(existingClientId))
+        if (!spawnedClients.ContainsKey(existingClientId))
         {
             Debug.LogWarning($"Trying to spawn existing player {existingClientId} but it doesn't exist on the client.");
             return;
         }
 
-        GameObject playerInstance = Instantiate(playerPrefab);
+        GameObject playerInstance = Instantiate(clientPrefab);
         playerInstance.GetComponent<NetworkObject>().Spawn();
-        spawnedPlayers[existingClientId] = playerInstance;
+        spawnedClients[existingClientId] = playerInstance;
         Debug.Log($"Spawned existing player {existingClientId} for new client {targetClientId}");
     }
 }

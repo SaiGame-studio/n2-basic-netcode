@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 4504056437076653799}
   - component: {fileID: 4150803289012262367}
   - component: {fileID: -1092407361690179956}
+  - component: {fileID: 2202534603441461156}
   m_Layer: 0
-  m_Name: PlayerServer
+  m_Name: ClientPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -126,6 +127,18 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   ContinuallyCheckVisibility: 1
   VisibilityDistance: 5
+--- !u!114 &2202534603441461156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4179029445588859838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aba59b7edebebd488270c558a645f41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4922722791581955311
 GameObject:
   m_ObjectHideFlags: 0

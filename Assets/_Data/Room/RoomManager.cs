@@ -2,20 +2,22 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System;
+using UnityEditor.PackageManager;
 
 public class RoomManager : NetworkBehaviour
 {
     public static RoomManager Instance { get; private set; }
 
-    [SerializeField] protected ulong clientId;
+    [SerializeField] protected ulong localClientID;
+    [SerializeField] protected GameObject anchorPrefab;
     [SerializeField] protected Room currentRoom;
     [SerializeField] protected List<Room> rooms = new();
     protected Dictionary<ulong, Room> playerRoomMap = new();
 
+    [SerializeField] protected bool autoUpdateRooms = true;
+
     public string roomNameInput = "Room_1234";
     public int maxPlayersInput = 2;
-
-    [SerializeField] protected bool autoUpdateRooms = true;
 
     public static event Action<ulong, string> OnClientJoinedRoom;
     public static event Action<ulong, string> OnClientLeftRoom;
@@ -23,13 +25,15 @@ public class RoomManager : NetworkBehaviour
     [System.Serializable]
     public class Room
     {
-        public string RoomID;
+        public int RoomID;
+        public string RoomName;
         public int MaxPlayers;
+        public RoomAnchor roomAnchor;
         public List<ulong> Players;
 
         public Room(string id, int maxPlayers)
         {
-            RoomID = id;
+            RoomName = id;
             MaxPlayers = maxPlayers;
             Players = new List<ulong>();
         }
@@ -65,7 +69,7 @@ public class RoomManager : NetworkBehaviour
             RequestRoomDataServerRpc();
         }
 
-        this.clientId = NetworkManager.LocalClientId;
+        this.localClientID = NetworkManager.LocalClientId;
     }
 
     public void CreateRoom()
@@ -106,7 +110,7 @@ public class RoomManager : NetworkBehaviour
 
     private void CreateRoomOnServer(ulong clientId, string roomName, int maxPlayers)
     {
-        if (rooms.Exists(r => r.RoomID == roomName))
+        if (rooms.Exists(r => r.RoomName == roomName))
         {
             Debug.LogWarning($"[{clientId}] Room '{roomName}' already exists.");
             return;
@@ -115,12 +119,40 @@ public class RoomManager : NetworkBehaviour
         Room newRoom = new(roomName, maxPlayers);
         newRoom.Players.Add(clientId);
         rooms.Add(newRoom);
+        newRoom.RoomID = this.rooms.Count;
+        RoomAnchor roomAnchor = this.CreateRoomAnchor(newRoom);
+        this.MoveClientToAnchor(clientId, roomAnchor);
+
         playerRoomMap[clientId] = newRoom;
-        if (clientId == this.clientId) this.currentRoom = newRoom;
+
+        if (clientId == this.localClientID) this.currentRoom = newRoom;
         if (autoUpdateRooms) UpdateClientsRoomList();
 
         OnClientJoinedRoom?.Invoke(clientId, roomName);
         Debug.Log($"[{clientId}] Created room: {roomName} (Max Players: {maxPlayers})");
+    }
+
+    protected virtual void MoveClientToAnchor(ulong clientId, Room room)
+    {
+        this.MoveClientToAnchor(clientId,room.roomAnchor);
+    }
+
+    protected virtual void MoveClientToAnchor(ulong clientId, RoomAnchor roomAnchor)
+    {
+        ClientCtrl playerCtrl = ClientManager.Instance.GetClientObject(clientId);
+        playerCtrl.transform.position = roomAnchor.transform.position;
+    }
+
+    protected virtual RoomAnchor CreateRoomAnchor(Room newRoom)
+    {
+        GameObject anchorObj = Instantiate(this.anchorPrefab);
+        RoomAnchor roomAnchor = anchorObj.GetComponent<RoomAnchor>();
+        newRoom.roomAnchor = roomAnchor;
+        Vector3 pos = Vector3.zero;
+        pos.x = 100 * newRoom.RoomID;
+        anchorObj.transform.position = pos;
+        anchorObj.name = this.anchorPrefab.name + "_" + newRoom.RoomID;
+        return roomAnchor;
     }
 
     public void JoinRoom()
@@ -144,7 +176,7 @@ public class RoomManager : NetworkBehaviour
 
         if (IsServer)
         {
-            Room room = rooms.Find(r => r.RoomID == roomName);
+            Room room = rooms.Find(r => r.RoomName == roomName);
             if (room == null)
             {
                 Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] Room '{roomName}' does not exist.");
@@ -168,7 +200,7 @@ public class RoomManager : NetworkBehaviour
 
     private void JoinSpecificRoom(ulong clientId, string roomName)
     {
-        Room room = rooms.Find(r => r.RoomID == roomName);
+        Room room = rooms.Find(r => r.RoomName == roomName);
         if (room == null)
         {
             Debug.LogWarning($"[{clientId}] Room '{roomName}' not found.");
@@ -184,7 +216,10 @@ public class RoomManager : NetworkBehaviour
         room.Players.Add(clientId);
         playerRoomMap[clientId] = room;
         if (autoUpdateRooms) UpdateClientsRoomList();
-        if (this.currentRoom != null && room.RoomID == this.currentRoom.RoomID) this.currentRoom = room;
+        if (this.currentRoom != null && room.RoomName == this.currentRoom.RoomName) this.currentRoom = room;
+
+
+        this.MoveClientToAnchor(clientId, room);
 
         OnClientJoinedRoom?.Invoke(clientId, roomName);
         Debug.Log($"[{clientId}] Joined room: {roomName} (Players: {room.Players.Count}/{room.MaxPlayers})");
@@ -231,17 +266,17 @@ public class RoomManager : NetworkBehaviour
 
         room.Players.Remove(clientId);
         playerRoomMap.Remove(clientId);
-        Debug.Log($"[{clientId}] Left room: {room.RoomID}");
+        Debug.Log($"[{clientId}] Left room: {room.RoomName}");
 
         if (room.Players.Count == 0)
         {
-            Debug.Log($"Room {room.RoomID} is now empty and will be removed.");
+            Debug.Log($"Room {room.RoomName} is now empty and will be removed.");
             rooms.Remove(room);
         }
 
         if (autoUpdateRooms) UpdateClientsRoomList();
 
-        OnClientLeftRoom?.Invoke(clientId, room.RoomID);
+        OnClientLeftRoom?.Invoke(clientId, room.RoomName);
     }
 
     public void ShowRoomList()
@@ -273,7 +308,7 @@ public class RoomManager : NetworkBehaviour
 
     protected virtual void ClientUpdateCurrentRoom()
     {
-        Room room = this.GetRoomClientBelongTo(this.clientId);
+        Room room = this.GetRoomClientBelongTo(this.localClientID);
         this.currentRoom = room;
     }
 
@@ -311,7 +346,7 @@ public class RoomManager : NetworkBehaviour
 
     public Room GetRoomByName(string roomName)
     {
-        return rooms.Find(room => room.RoomID == roomName);
+        return rooms.Find(room => room.RoomName == roomName);
     }
 
 }

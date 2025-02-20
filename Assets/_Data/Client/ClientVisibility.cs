@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 
-public class PlayerVisibility : NetworkBehaviour
+public class ClientVisibility : NetworkBehaviour
 {
     public bool ContinuallyCheckVisibility = true;
     public float VisibilityDistance = 5f;
