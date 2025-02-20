@@ -4,7 +4,7 @@ using TMPro;
 public class ConsoleToTextMeshPro : MonoBehaviour
 {
     public TextMeshProUGUI logText;
-    public int maxText = 1000;
+    public int maxText = 700;
     private string logMessages = "";
 
     void OnEnable()

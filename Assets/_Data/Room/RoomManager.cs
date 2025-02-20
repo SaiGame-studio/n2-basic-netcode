@@ -2,7 +2,6 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System;
-using UnityEditor.PackageManager;
 
 public class RoomManager : NetworkBehaviour
 {
@@ -28,7 +27,7 @@ public class RoomManager : NetworkBehaviour
         public int RoomID;
         public string RoomName;
         public int MaxPlayers;
-        public RoomAnchor roomAnchor;
+        public RoomAnchorCtrl roomAnchor;
         public List<ulong> Players;
 
         public Room(string id, int maxPlayers)
@@ -120,7 +119,7 @@ public class RoomManager : NetworkBehaviour
         newRoom.Players.Add(clientId);
         rooms.Add(newRoom);
         newRoom.RoomID = this.rooms.Count;
-        RoomAnchor roomAnchor = this.CreateRoomAnchor(newRoom);
+        RoomAnchorCtrl roomAnchor = this.CreateRoomAnchor(newRoom);
         this.MoveClientToAnchor(clientId, roomAnchor);
 
         playerRoomMap[clientId] = newRoom;
@@ -137,21 +136,23 @@ public class RoomManager : NetworkBehaviour
         this.MoveClientToAnchor(clientId,room.roomAnchor);
     }
 
-    protected virtual void MoveClientToAnchor(ulong clientId, RoomAnchor roomAnchor)
+    protected virtual void MoveClientToAnchor(ulong clientId, RoomAnchorCtrl roomAnchor)
     {
         ClientCtrl playerCtrl = ClientManager.Instance.GetClientObject(clientId);
         playerCtrl.transform.position = roomAnchor.transform.position;
     }
 
-    protected virtual RoomAnchor CreateRoomAnchor(Room newRoom)
+    protected virtual RoomAnchorCtrl CreateRoomAnchor(Room newRoom)
     {
         GameObject anchorObj = Instantiate(this.anchorPrefab);
-        RoomAnchor roomAnchor = anchorObj.GetComponent<RoomAnchor>();
+        RoomAnchorCtrl roomAnchor = anchorObj.GetComponent<RoomAnchorCtrl>();
         newRoom.roomAnchor = roomAnchor;
         Vector3 pos = Vector3.zero;
         pos.x = 100 * newRoom.RoomID;
         anchorObj.transform.position = pos;
         anchorObj.name = this.anchorPrefab.name + "_" + newRoom.RoomID;
+
+        roomAnchor.NetworkObject.Spawn();
         return roomAnchor;
     }
 
