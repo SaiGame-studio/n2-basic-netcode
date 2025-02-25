@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8735411834008374067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7558702435257654191}
+  - component: {fileID: 1922935026794801858}
+  m_Layer: 0
+  m_Name: ServerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7558702435257654191
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8735411834008374067}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1922935026794801858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8735411834008374067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd33c820c0bde34c8a5f4ba0bb6ab4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  servers:
+  - ServerName: Server 1
+    IPAddress: 127.0.0.1
+    Port: 1111
+  - ServerName: Server 2
+    IPAddress: 127.0.0.1
+    Port: 2222
+  - ServerName: Server 3
+    IPAddress: 127.0.0.1
+    Port: 3333
+  - ServerName: Server 4
+    IPAddress: 127.0.0.1
+    Port: 4444
+  - ServerName: Server 5
+    IPAddress: 127.0.0.1
+    Port: 5555
+  - ServerName: Server 6
+    IPAddress: 127.0.0.1
+    Port: 6666
+  - ServerName: Server 7
+    IPAddress: 127.0.0.1
+    Port: 7777

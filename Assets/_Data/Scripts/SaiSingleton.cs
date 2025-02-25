@@ -28,6 +28,6 @@ public abstract class SaiSingleton<T> : SaiBehaviour where T : SaiBehaviour
             return;
         }
 
-        if (_instance != this) Debug.LogError("Another instance of SingletonExample already exists!");
+        if (_instance != this) Debug.LogError("Another instance of SingletonExample already exists!", gameObject);
     }
 }

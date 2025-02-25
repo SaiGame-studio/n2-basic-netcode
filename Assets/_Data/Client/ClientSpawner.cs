@@ -9,14 +9,14 @@ public class ClientSpawner : MonoBehaviour
 
     private void OnEnable()
     {
-        RoomManager.OnClientJoinedRoom += HandleClientJoinedRoom;
-        RoomManager.OnClientLeftRoom += HandleClientLeftRoom;
+        RoomManager.OnClientJoinedRoomOnServer += HandleClientJoinedRoom;
+        RoomManager.OnClientLeftRoomOnServer += HandleClientLeftRoom;
     }
 
     private void OnDisable()
     {
-        RoomManager.OnClientJoinedRoom -= HandleClientJoinedRoom;
-        RoomManager.OnClientLeftRoom -= HandleClientLeftRoom;
+        RoomManager.OnClientJoinedRoomOnServer -= HandleClientJoinedRoom;
+        RoomManager.OnClientLeftRoomOnServer -= HandleClientLeftRoom;
     }
 
     private void HandleClientJoinedRoom(ulong clientId, string roomName)

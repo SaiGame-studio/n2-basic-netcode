@@ -11,15 +11,16 @@ public class RoomManager : NetworkBehaviour
     [SerializeField] protected GameObject anchorPrefab;
     [SerializeField] protected Room currentRoom;
     [SerializeField] protected List<Room> rooms = new();
-    protected Dictionary<ulong, Room> playerRoomMap = new();
-
     [SerializeField] protected bool autoUpdateRooms = true;
 
     public string roomNameInput = "Room_1234";
     public int maxPlayersInput = 2;
 
-    public static event Action<ulong, string> OnClientJoinedRoom;
-    public static event Action<ulong, string> OnClientLeftRoom;
+    public static event Action<ulong, string> OnClientJoinedRoomOnServer;
+    public static event Action<ulong, string> OnClientLeftRoomOnServer;
+
+    public static event Action<ulong, string> OnJoinedRoomAtClient;
+    public static event Action<ulong, string> OnLeftRoomAtClient;
 
     [System.Serializable]
     public class Room
@@ -84,7 +85,8 @@ public class RoomManager : NetworkBehaviour
             return;
         }
 
-        if (playerRoomMap.ContainsKey(NetworkManager.Singleton.LocalClientId))
+        Room room = this.GetRoomClientBelongTo(this.localClientID);
+        if (room != null)
         {
             Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] Already in a room.");
             return;
@@ -122,13 +124,12 @@ public class RoomManager : NetworkBehaviour
         RoomAnchorCtrl roomAnchor = this.CreateRoomAnchor(newRoom);
         this.MoveClientToAnchor(clientId, roomAnchor);
 
-        playerRoomMap[clientId] = newRoom;
-
         if (clientId == this.localClientID) this.currentRoom = newRoom;
         if (autoUpdateRooms) UpdateClientsRoomList();
 
-        OnClientJoinedRoom?.Invoke(clientId, roomName);
-        Debug.Log($"[{clientId}] Created room: {roomName} (Max Players: {maxPlayers})");
+        OnClientJoinedRoomOnServer?.Invoke(clientId, roomName);
+        SendClientJoinRoomClientRpc(roomName, clientId);
+        Debug.Log($"[{clientId}] Created room: {roomName} (Max Players: {maxPlayers})", gameObject);
     }
 
     protected virtual void MoveClientToAnchor(ulong clientId, Room room)
@@ -169,7 +170,8 @@ public class RoomManager : NetworkBehaviour
             return;
         }
 
-        if (playerRoomMap.ContainsKey(NetworkManager.Singleton.LocalClientId))
+        Room room = this.GetRoomClientBelongTo(localClientID);
+        if (room != null)
         {
             Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] Already in a room.");
             return;
@@ -177,7 +179,7 @@ public class RoomManager : NetworkBehaviour
 
         if (IsServer)
         {
-            Room room = rooms.Find(r => r.RoomName == roomName);
+            room = this.GetRoomByName(roomName);
             if (room == null)
             {
                 Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] Room '{roomName}' does not exist.");
@@ -215,14 +217,13 @@ public class RoomManager : NetworkBehaviour
         }
 
         room.Players.Add(clientId);
-        playerRoomMap[clientId] = room;
         if (autoUpdateRooms) UpdateClientsRoomList();
         if (this.currentRoom != null && room.RoomName == this.currentRoom.RoomName) this.currentRoom = room;
 
-
         this.MoveClientToAnchor(clientId, room);
 
-        OnClientJoinedRoom?.Invoke(clientId, roomName);
+        OnClientJoinedRoomOnServer?.Invoke(clientId, roomName);
+        SendClientJoinRoomClientRpc(roomName, clientId);
         Debug.Log($"[{clientId}] Joined room: {roomName} (Players: {room.Players.Count}/{room.MaxPlayers})");
     }
 
@@ -234,7 +235,8 @@ public class RoomManager : NetworkBehaviour
             return;
         }
 
-        if (!playerRoomMap.ContainsKey(NetworkManager.Singleton.LocalClientId))
+        Room room = this.currentRoom;
+        if (!room.Players.Contains(NetworkManager.Singleton.LocalClientId))
         {
             Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] You are not in any room.");
             return;
@@ -259,25 +261,26 @@ public class RoomManager : NetworkBehaviour
 
     private void RemovePlayerFromRoom(ulong clientId)
     {
-        if (!playerRoomMap.TryGetValue(clientId, out Room room))
+        Room room = this.GetRoomClientBelongTo(clientId);
+        if (room == null)
         {
             Debug.LogWarning($"[{clientId}] Not in any room.");
             return;
         }
 
         room.Players.Remove(clientId);
-        playerRoomMap.Remove(clientId);
-        Debug.Log($"[{clientId}] Left room: {room.RoomName}");
+        Debug.Log($"[{clientId}] Left room: {room.RoomName}", gameObject);
 
         if (room.Players.Count == 0)
         {
-            Debug.Log($"Room {room.RoomName} is now empty and will be removed.");
+            Debug.Log($"Room {room.RoomName} is now empty and will be removed.", gameObject);
             rooms.Remove(room);
         }
 
         if (autoUpdateRooms) UpdateClientsRoomList();
 
-        OnClientLeftRoom?.Invoke(clientId, room.RoomName);
+        OnClientLeftRoomOnServer?.Invoke(clientId, room.RoomName);
+        SendLeftRoomClientRpc(room.RoomName, clientId);
     }
 
     public void ShowRoomList()
@@ -304,7 +307,7 @@ public class RoomManager : NetworkBehaviour
         RoomListWrapper wrapper = JsonUtility.FromJson<RoomListWrapper>(json);
         rooms = wrapper.Rooms;
         this.ClientUpdateCurrentRoom();
-        Debug.Log("Updated room list from server.");
+        Debug.Log("Updated room list from server.", gameObject);
     }
 
     protected virtual void ClientUpdateCurrentRoom()
@@ -350,4 +353,17 @@ public class RoomManager : NetworkBehaviour
         return rooms.Find(room => room.RoomName == roomName);
     }
 
+    [ClientRpc]
+    private void SendClientJoinRoomClientRpc(string roomName, ulong clientId, ClientRpcParams clientRpcParams = default)
+    {
+        Debug.Log($"Client {clientId} join room {roomName}", gameObject);
+        OnJoinedRoomAtClient?.Invoke(clientId, roomName);
+    }
+
+    [ClientRpc]
+    private void SendLeftRoomClientRpc(string roomName, ulong clientId, ClientRpcParams clientRpcParams = default)
+    {
+        Debug.Log($"Client {clientId} left room {roomName}", gameObject);
+        OnLeftRoomAtClient?.Invoke(clientId, roomName);
+    }
 }

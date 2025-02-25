@@ -9,7 +9,7 @@ public class ClientManager : SaiSingleton<ClientManager>
         {
             GameObject playerObject = client.PlayerObject.gameObject;
             ClientCtrl playerCtrl = playerObject.GetComponent<ClientCtrl>();
-            Debug.Log($"Found PlayerObject for Client {clientId}: {playerObject.name}");
+            Debug.Log($"Found PlayerObject for Client {clientId}: {playerObject.name}", gameObject);
             return playerCtrl;
         }
         Debug.LogWarning($"PlayerObject for Client {clientId} not found.");
