@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3809467273036180545}
   - component: {fileID: -2372550780248973205}
   - component: {fileID: 2977838274036651832}
-  - component: {fileID: -8782753487890269318}
+  - component: {fileID: 2076673095040443222}
   m_Layer: 0
   m_Name: RoomAnchor
   m_TagString: Untagged
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a6f3198ef659d54a951f76a31b44f2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 0}
+  roomContainer: {fileID: 0}
   networkObject: {fileID: 2977838274036651832}
 --- !u!114 &2977838274036651832
 MonoBehaviour:
@@ -73,7 +73,7 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &-8782753487890269318
+--- !u!114 &2076673095040443222
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -82,9 +82,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 4407775290677019906}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14b5e4bcca2a13149834cdb8071ee7d4, type: 3}
+  m_Script: {fileID: 11500000, guid: a0b3b428eb3261c4986ca9ca1b66c206, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  ContinuallyCheckVisibility: 1
-  VisibilityDistance: 5
+  continuallyCheckVisibility: 1
+  target: {fileID: 0}
+  visibilityDistance: 50
+  targetDistance: Infinity

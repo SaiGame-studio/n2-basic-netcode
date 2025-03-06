@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 2151891834699756406}
   - component: {fileID: 4504056437076653799}
   - component: {fileID: 4150803289012262367}
-  - component: {fileID: -1092407361690179956}
   - component: {fileID: 2202534603441461156}
+  - component: {fileID: 5880516433511672957}
   m_Layer: 0
   m_Name: ClientPrefab
   m_TagString: Untagged
@@ -112,21 +112,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
---- !u!114 &-1092407361690179956
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4179029445588859838}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14b5e4bcca2a13149834cdb8071ee7d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  ContinuallyCheckVisibility: 1
-  VisibilityDistance: 5
 --- !u!114 &2202534603441461156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,6 +124,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aba59b7edebebd488270c558a645f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  visibilityByTarget: {fileID: 5880516433511672957}
+--- !u!114 &5880516433511672957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4179029445588859838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4e6b38ff93d5354a8a46a84145fcc64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  continuallyCheckVisibility: 1
+  visibilityDistance: 50
+  target: {fileID: 0}
 --- !u!1 &4922722791581955311
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,6 +2,8 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System;
+using System.Linq;
+using UnityEditor.PackageManager;
 
 public class RoomManager : NetworkBehaviour
 {
@@ -21,23 +23,6 @@ public class RoomManager : NetworkBehaviour
 
     public static event Action<ulong, string> OnJoinedRoomAtClient;
     public static event Action<ulong, string> OnLeftRoomAtClient;
-
-    [System.Serializable]
-    public class Room
-    {
-        public int RoomID;
-        public string RoomName;
-        public int MaxPlayers;
-        public RoomAnchorCtrl roomAnchor;
-        public List<ulong> Players;
-
-        public Room(string id, int maxPlayers)
-        {
-            RoomName = id;
-            MaxPlayers = maxPlayers;
-            Players = new List<ulong>();
-        }
-    }
 
     [System.Serializable]
     private class RoomListWrapper
@@ -85,7 +70,7 @@ public class RoomManager : NetworkBehaviour
             return;
         }
 
-        Room room = this.GetRoomClientBelongTo(this.localClientID);
+        Room room = this.FindRoomByClientId(this.localClientID);
         if (room != null)
         {
             Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] Already in a room.");
@@ -120,7 +105,7 @@ public class RoomManager : NetworkBehaviour
         Room newRoom = new(roomName, maxPlayers);
         newRoom.Players.Add(clientId);
         rooms.Add(newRoom);
-        newRoom.RoomID = this.rooms.Count;
+        newRoom.RoomID = this.CreateRoomId(); ;
         RoomAnchorCtrl roomAnchor = this.CreateRoomAnchor(newRoom);
         this.MoveClientToAnchor(clientId, roomAnchor);
 
@@ -131,6 +116,21 @@ public class RoomManager : NetworkBehaviour
         SendClientJoinRoomClientRpc(roomName, clientId);
         Debug.Log($"[{clientId}] Created room: {roomName} (Max Players: {maxPlayers})", gameObject);
     }
+
+    private int CreateRoomId()
+    {
+        List<int> roomIds = rooms.Select(r => r.RoomID).ToList();
+        roomIds.Sort();
+        for (int i = 1; i <= roomIds.Count; i++)
+        {
+            if (!roomIds.Contains(i))
+            {
+                return i;
+            }
+        }
+        return roomIds.Count + 1;
+    }
+
 
     protected virtual void MoveClientToAnchor(ulong clientId, Room room)
     {
@@ -170,7 +170,7 @@ public class RoomManager : NetworkBehaviour
             return;
         }
 
-        Room room = this.GetRoomClientBelongTo(localClientID);
+        Room room = this.FindRoomByClientId(localClientID);
         if (room != null)
         {
             Debug.LogWarning($"[{NetworkManager.Singleton.LocalClientId}] Already in a room.");
@@ -261,7 +261,7 @@ public class RoomManager : NetworkBehaviour
 
     private void RemovePlayerFromRoom(ulong clientId)
     {
-        Room room = this.GetRoomClientBelongTo(clientId);
+        Room room = this.FindRoomByClientId(clientId);
         if (room == null)
         {
             Debug.LogWarning($"[{clientId}] Not in any room.");
@@ -281,6 +281,17 @@ public class RoomManager : NetworkBehaviour
 
         OnClientLeftRoomOnServer?.Invoke(clientId, room.RoomName);
         SendLeftRoomClientRpc(room.RoomName, clientId);
+        this.MoveObjectToZero(clientId);
+    }
+
+    protected virtual void MoveObjectToZero(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId)) return;
+
+        var networkObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+        networkObj.transform.position = Vector3.zero;
     }
 
     public void ShowRoomList()
@@ -312,7 +323,7 @@ public class RoomManager : NetworkBehaviour
 
     protected virtual void ClientUpdateCurrentRoom()
     {
-        Room room = this.GetRoomClientBelongTo(this.localClientID);
+        Room room = this.FindRoomByClientId(this.localClientID);
         this.currentRoom = room;
     }
 
@@ -333,7 +344,7 @@ public class RoomManager : NetworkBehaviour
         return rooms;
     }
 
-    protected virtual Room GetRoomClientBelongTo(ulong clientId)
+    public virtual Room FindRoomByClientId(ulong clientId)
     {
         foreach (Room room in rooms)
         {
