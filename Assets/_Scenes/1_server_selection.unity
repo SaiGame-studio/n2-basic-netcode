@@ -256,6 +256,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &391185354
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 391185356}
+  - component: {fileID: 391185355}
+  m_Layer: 0
+  m_Name: InputManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &391185355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 391185354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3eff04fe0d161840926aa132915c2f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  screenBounds: {x: 0, y: 0}
+--- !u!4 &391185356
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 391185354}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 643450846}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &455184478 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7558702435257654191, guid: 7caa1fe6b84f0df41a8245552e27f6be, type: 3}
@@ -491,6 +536,7 @@ Transform:
   - {fileID: 455184478}
   - {fileID: 847288427}
   - {fileID: 888328380}
+  - {fileID: 391185356}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &691287286 stripped
@@ -1134,6 +1180,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 876055932}
     m_Modifications:
+    - target: {fileID: 5378771033531788739, guid: 3dcf23ba632d7584f9f9317c42e8fb11, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -50
+      objectReference: {fileID: 0}
     - target: {fileID: 7375344413397391372, guid: 3dcf23ba632d7584f9f9317c42e8fb11, type: 3}
       propertyPath: m_Name
       value: UIRoomDetail

@@ -3,7 +3,6 @@ using Unity.Netcode;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using UnityEditor.PackageManager;
 
 public class RoomManager : NetworkBehaviour
 {
@@ -11,7 +10,10 @@ public class RoomManager : NetworkBehaviour
 
     [SerializeField] protected ulong localClientID;
     [SerializeField] protected GameObject anchorPrefab;
+
     [SerializeField] protected Room currentRoom;
+    public Room CurrentRoom => currentRoom;
+
     [SerializeField] protected List<Room> rooms = new();
     [SerializeField] protected bool autoUpdateRooms = true;
 
@@ -134,7 +136,7 @@ public class RoomManager : NetworkBehaviour
 
     protected virtual void MoveClientToAnchor(ulong clientId, Room room)
     {
-        this.MoveClientToAnchor(clientId,room.roomAnchor);
+        this.MoveClientToAnchor(clientId, room.roomAnchor);
     }
 
     protected virtual void MoveClientToAnchor(ulong clientId, RoomAnchorCtrl roomAnchor)
@@ -376,5 +378,12 @@ public class RoomManager : NetworkBehaviour
     {
         Debug.Log($"Client {clientId} left room {roomName}", gameObject);
         OnLeftRoomAtClient?.Invoke(clientId, roomName);
+    }
+
+    public virtual int GetMyIndex(ulong ownerId)
+    {
+        Room myRoom = this.FindRoomByClientId(ownerId);
+        if (myRoom == null) return 0;
+        return myRoom.Players.FindIndex(player => player == ownerId);
     }
 }

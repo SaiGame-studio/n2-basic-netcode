@@ -3,22 +3,27 @@ using UnityEngine;
 
 public class ClientMoving : NetworkBehaviour
 {
-    public float moveSpeed = 5f;
-    private Vector3 moveInput;
+    [SerializeField] protected float moveSpeed = 25f;
+    [SerializeField] protected Transform target;
+    [SerializeField] protected float maxDistance = 43f;
 
     void Update()
     {
-        if (!IsOwner) return;
+        if (!IsOwner || target == null) return;
 
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-        moveInput = new Vector3(moveX, 0, moveZ);
+        Vector3 targetPosition = InputManager.Instance.GetMouseWorldPosition();
+        targetPosition.z = 0;
 
-        SendMovementToServerServerRpc(moveInput);
+        if (Vector3.Distance(targetPosition, target.position) > maxDistance)
+        {
+            targetPosition = target.position + (targetPosition - target.position).normalized * maxDistance;
+        }
+
+        SendMovementToServerServerRpc(targetPosition);
     }
 
     [ServerRpc]
-    private void SendMovementToServerServerRpc(Vector3 moveDirection, ServerRpcParams rpcParams = default)
+    private void SendMovementToServerServerRpc(Vector3 targetPosition, ServerRpcParams rpcParams = default)
     {
         if (!IsServer) return;
 
@@ -26,8 +31,18 @@ public class ClientMoving : NetworkBehaviour
         {
             if (client.PlayerObject.TryGetComponent(out ClientMoving player))
             {
-                player.transform.position += moveDirection * moveSpeed * Time.deltaTime;
+                player.MoveTowardsTarget(targetPosition);
             }
         }
+    }
+
+    private void MoveTowardsTarget(Vector3 targetPosition)
+    {
+        transform.position = Vector3.Lerp(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+    }
+
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
     }
 }

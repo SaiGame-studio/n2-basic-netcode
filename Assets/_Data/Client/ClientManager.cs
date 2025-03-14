@@ -3,6 +3,12 @@ using Unity.Netcode;
 
 public class ClientManager : SaiSingleton<ClientManager>
 {
+    public virtual ClientCtrl GetMyClient()
+    {
+        ulong myClientId = NetworkManager.Singleton.LocalClientId;
+        return this.GetClientObject(myClientId);
+    }
+
     public virtual ClientCtrl GetClientObject(ulong clientId)
     {
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
